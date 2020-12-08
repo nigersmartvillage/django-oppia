@@ -14,6 +14,7 @@ class UserProfile (models.Model):
     organisation = models.TextField(blank=True, null=True, default=None)
     phone_number = models.TextField(blank=True, null=True, default=None)
 
+
     def get_can_upload(self):
         if self.user.is_staff:
             return True
@@ -33,7 +34,7 @@ class UserProfile (models.Model):
         if self.user.is_staff:
             return False
         teacher = Participant.objects.filter(user=self.user,
-                                           role=Participant.TEACHER).count()
+                                             role=Participant.TEACHER).count()
         manager = CoursePermissions.objects \
             .filter(user=self.user,
                     role=CoursePermissions.MANAGER).count()

@@ -1,4 +1,9 @@
+import datetime
+
 from django.urls import reverse
+from django.utils import timezone
+
+from oppia.models import Tracker
 from oppia.test import OppiaTestCase
 
 
@@ -8,7 +13,10 @@ class XAPIIntegrationViewsTest(OppiaTestCase):
                 'tests/test_oppia.json',
                 'tests/test_quiz.json',
                 'tests/test_permissions.json',
-                'tests/test_course_permissions.json']
+                'default_gamification_events.json',
+                'tests/test_course_permissions.json',
+                'tests/test_tracker.json',
+                'tests/test_quizattempt.json']
 
     def setUp(self):
         super(XAPIIntegrationViewsTest, self).setUp()
@@ -65,3 +73,13 @@ class XAPIIntegrationViewsTest(OppiaTestCase):
         response = self.get_view(self.xapi_export_url, self.teacher_user)
         self.assertRedirects(response,
                              '/admin/login/?next=/integrations/xapi/export/')
+
+    # test download file
+    def test_admin_canview_download_file(self):
+        four_days_ago = timezone.now() - datetime.timedelta(days=4)
+        for tracker in Tracker.objects.all():
+            tracker.tracker_date = four_days_ago
+            tracker.submitted_date = four_days_ago
+            tracker.save()
+        response = self.get_view(self.xapi_export_url, self.admin_user)
+        self.assertEqual(response.status_code, 200)

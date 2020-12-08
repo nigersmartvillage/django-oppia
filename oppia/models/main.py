@@ -95,10 +95,12 @@ class Course(models.Model):
             .count()
 
     def get_activity_week(self):
-        now = datetime.datetime.now()
-        last_week = datetime.datetime(now.year,
-                                      now.month,
-                                      now.day) - datetime.timedelta(days=7)
+        now = timezone.now()
+        last_week = timezone.make_aware(
+            datetime.datetime(now.year,
+                              now.month,
+                              now.day) - datetime.timedelta(days=7),
+            timezone.get_current_timezone())
         return Tracker.objects.filter(course=self,
                                       tracker_date__gte=last_week).count()
 
@@ -467,9 +469,11 @@ class Media(models.Model):
 class Tracker(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     submitted_date = models.DateTimeField('date submitted',
-                                          default=timezone.now)
+                                          default=timezone.now,
+                                          db_index=True)
     tracker_date = models.DateTimeField('date tracked',
-                                        default=timezone.now)
+                                        default=timezone.now,
+                                        db_index=True)
     ip = models.GenericIPAddressField(null=True, blank=True, default=None)
     agent = models.TextField(blank=True)
     digest = models.CharField(max_length=100)
