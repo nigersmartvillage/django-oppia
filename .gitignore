@@ -14,7 +14,7 @@
 oppiamobile/settings_secret.py
 .coverage
 /tests/coverage.xml
-
+db.sqlite3
 /sonarcloud.sh
 /sonarcloud
 /static/css/oppia.css
