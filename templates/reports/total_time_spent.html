@@ -8,17 +8,17 @@
 	{% trans 'Total Time Spent' %}
 {% endblock extra_head_title %}
 
-
 {% block header %}
 <div class="jumbotron mb-4">
-	<h3><a href="{% url 'reports:index' %}">{% trans 'Analytics/Reports' %}</a>
-		&gt; {% trans 'Total Time Spent' %}</h3>
+	<div class="row">
+        <div class="col"><h3 class="mt-3"><a href="{% url 'reports:index' %}">{% trans 'Analytics/Reports' %}</a>
+		&gt; {% trans 'Total Time Spent' %}</h3></div>
+        
+         {% include "common/form/date-range.html" with dateform=form drop='down' %}
+    </div>
 </div>
 {% endblock header %}
 
 {% block content %}
-
-{% include "oppia/includes/activity-graph.html" %}
-
-{% include "reports/includes/notes.html" %}
+{% include "reports/includes/graph_display.html" %}
 {% endblock content %}

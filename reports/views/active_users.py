@@ -12,50 +12,40 @@ from django.views.generic import TemplateView
 from oppia import constants as oppia_constants
 
 from reports import constants as reports_constants
+
 from reports.forms import ReportGroupByForm
 from reports.signals import dashboard_accessed
+from reports.views.base_report_template import BaseReportTemplateView
 
 from summary.models import DailyActiveUser
 
 
 @method_decorator(staff_member_required, name='dispatch')
-class DailyActiveUsersView(TemplateView):
+class DailyActiveUsersView(BaseReportTemplateView):
 
-    def get(self, request):
-        dashboard_accessed.send(sender=None, request=request, data=None)
-        start_date = timezone.now() - datetime.timedelta(
-            days=reports_constants.DAUS_DEFAULT_NO_DAYS)
-        end_date = timezone.now()
+    def process(self, request, form, start_date, end_date):
         data = []
         no_days = (end_date - start_date).days + 1
         for i in range(0, no_days, +1):
             temp = start_date + datetime.timedelta(days=i)
-            try:
-                summary_counts_no_admin = DailyActiveUser.objects.filter(
-                    dau__day=temp.strftime("%Y-%m-%d"),
-                    user__is_staff=False) \
-                    .aggregate(total_submitted_date=Count('user'))
-                data.append([temp.strftime(oppia_constants.STR_DATE_FORMAT),
-                             summary_counts_no_admin['total_submitted_date']])
-            except DailyActiveUser.DoesNotExist:
-                data.append(
-                    [temp.strftime(oppia_constants.STR_DATE_FORMAT), 0])
+            summary_counts_no_admin = DailyActiveUser.objects.filter(
+                dau__day=temp.strftime(oppia_constants.STR_DATE_FORMAT),
+                user__is_staff=False) \
+                .aggregate(total_submitted_date=Count('user'))
 
-        group_by_form = ReportGroupByForm()
+            data.append([temp.strftime(
+                oppia_constants.STR_DATE_DISPLAY_FORMAT),
+                         summary_counts_no_admin['total_submitted_date']])
+
         return render(request, 'reports/daus.html',
                       {'activity_graph_data': data,
-                       'form': group_by_form})
+                       'form': form})
 
 
 @method_decorator(staff_member_required, name='dispatch')
-class MonthlyActiveUsersView(TemplateView):
+class MonthlyActiveUsersView(BaseReportTemplateView):
 
-    def get(self, request):
-        dashboard_accessed.send(sender=None, request=request, data=None)
-        start_date = timezone.now() - relativedelta(
-            months=reports_constants.MAUS_DEFAULT_NO_MONTHS)
-        end_date = timezone.now()
-
+    def process(self, request, form, start_date, end_date):
         delta = relativedelta(months=+1)
 
         no_months = 0
@@ -69,20 +59,15 @@ class MonthlyActiveUsersView(TemplateView):
             temp = start_date + relativedelta(months=+i)
             month = temp.strftime("%m")
             year = temp.strftime("%Y")
-            try:
-                summary_count_no_admin = DailyActiveUser.objects \
-                    .filter(dau__day__month=month,
-                            dau__day__year=year,
-                            user__is_staff=False) \
-                    .aggregate(total_submitted_date=Count('user'))
-                data.append(
-                    [temp.strftime(oppia_constants.STR_DATE_FORMAT_MONTH),
-                     summary_count_no_admin['total_submitted_date']])
-            except DailyActiveUser.DoesNotExist:
-                data.append(
-                    [temp.strftime(oppia_constants.STR_DATE_FORMAT_MONTH), 0])
+            summary_count_no_admin = DailyActiveUser.objects \
+                .filter(dau__day__month=month,
+                        dau__day__year=year,
+                        user__is_staff=False) \
+                .aggregate(total_submitted_date=Count('user'))
+            data.append(
+                [temp.strftime(oppia_constants.STR_DATE_DISPLAY_FORMAT_MONTH),
+                 summary_count_no_admin['total_submitted_date']])
 
-        group_by_form = ReportGroupByForm()
         return render(request, 'reports/maus.html',
                       {'activity_graph_data': data,
-                       'form': group_by_form})
+                       'form': form})

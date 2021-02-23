@@ -50,6 +50,10 @@ def menu_reports(request):
                 'description': _(u'In-app searches'),
                 'url': reverse('reports:searches'),
                 'icon': 'timeline'},
+               {'name': _(u'Search terms'),
+                'description': _(u'Search terms used'),
+                'url': reverse('reports:search_terms'),
+                'icon': 'vertical_split'},
                {'name': _(u'Activity by Language'),
                 'description': _(u'Activity by language'),
                 'url': reverse('reports:lang_activity'),
@@ -62,7 +66,7 @@ def menu_reports(request):
     if map_viz_enabled:
         reports.append({'name': _(u'Activity Map'),
                         'description': _(u'Map of users locations'),
-                        'url': reverse('reports:lang_activity'),
+                        'url': reverse('reports:map'),
                         'icon': 'map'})
         reports.append({'name': _(u'Countries'),
                         'description': _(
